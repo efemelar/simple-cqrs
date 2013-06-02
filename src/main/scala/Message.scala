@@ -1,0 +1,3 @@
+package simpleCQRS
+
+trait Message
