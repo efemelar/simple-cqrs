@@ -1,15 +1,14 @@
 package simpleCQRS
 
+class InventoryItem (private var _id : UUID,
+                     private var name: String)
+  extends AggregateRoot[InventoryItem] {
 
-
-class InventoryItem (
-    private var _id: UUID,
-    name: String
-) extends AggregateRoot[InventoryItem] {
-
-  applyChange(InventoryItemCreated(id, name))
+  def this() = this(null, null)
 
   private var _activated = false
+
+  private var _count = 0
 
   def apply = {
     case e: InventoryItemCreated => {
@@ -19,6 +18,20 @@ class InventoryItem (
     case e: InventoryItemDeactivated => {
       _activated = false
     }
+    case e:ItemsCheckedInToInventory => {
+      _count += e.count
+    }
+    case e:ItemsRemovedFromInventory => {
+      _count -= e.count
+    }
+    case e:InventoryItemRenamed => {
+      name = e.newName
+    }
+    case e:Event => throw new IllegalArgumentException(s"Unknown event : $e")
+  }
+
+  def init() = {
+    applyChange(InventoryItemCreated(id, name))
   }
 
   def changeName(newName: String) {
@@ -79,8 +92,8 @@ trait Repository[T <: AggregateRoot[T]] {
 
 import scala.reflect._
 
-class EventStoreRepository[T <: AggregateRoot[T] : ClassTag](
-  storage: EventStore) extends Repository[T] {
+class EventStoreRepository[T <: AggregateRoot[T] : ClassTag](storage: EventStore)
+  extends Repository[T] {
 
   def save(ar: AggregateRoot[T], expectedVersion: Int) {
     storage.saveEvents(ar.id, ar.uncommittedChanges, expectedVersion)

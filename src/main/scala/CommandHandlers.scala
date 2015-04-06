@@ -3,7 +3,9 @@ package simpleCQRS
 class InventoryCommandHandlers(repository: Repository[InventoryItem]) {
 
   def handle(cmd: CreateInventoryItem) {
-    repository.save(new InventoryItem(cmd.inventoryItemId, cmd.name), -1);
+    val item = new InventoryItem(cmd.inventoryItemId, cmd.name)
+    item.init()
+    repository.save(item, -1)
   }
 
   def handle(cmd: DeactivateInventoryItem) {
