@@ -2,6 +2,6 @@ organization := "fh"
 
 name := "simple-cqrs"
 
-version := "0.1-SNAPSHOT"
+version := "0.2-SNAPSHOT"
 
-scalaVersion := "2.10.0"
+scalaVersion := "2.11.6"
